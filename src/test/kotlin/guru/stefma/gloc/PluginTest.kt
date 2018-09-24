@@ -12,6 +12,18 @@ import java.io.File
 @ExtendWith(TemporaryDir::class)
 class PluginTest {
 
+    private fun runner(tempDir: File, vararg args: String): GradleRunner {
+        return GradleRunner.create()
+                .withProjectDir(tempDir)
+                .withPluginClasspath()
+                .apply {
+                    if (args.isNotEmpty()) {
+                        withArguments(*args)
+                    }
+                }
+                .withDebug(true)
+    }
+
     @Test
     fun `apply and enabled true - should print hello plugin`(tempDir: File) {
         File(tempDir, "build.gradle.kts").run {
@@ -24,11 +36,7 @@ class PluginTest {
             )
         }
 
-        val buildResult = GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .build()
-
+        val buildResult = runner(tempDir).build()
         assertThat(buildResult.output).contains("Hello Plugin \\o/")
     }
 
@@ -48,12 +56,7 @@ class PluginTest {
             )
         }
 
-        val failResult = GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .withArguments("gloc")
-                .buildAndFail()
-
+        val failResult = runner(tempDir, "gloc").buildAndFail()
         assert(failResult.output.contains("gloc.dirs should be set!"))
     }
 
@@ -73,11 +76,7 @@ class PluginTest {
             )
         }
 
-        val buildResult = GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .build()
-
+        val buildResult = runner(tempDir).build()
         assertThat(buildResult.output).doesNotContain("Hello Plugin \\o/")
     }
 
@@ -97,12 +96,7 @@ class PluginTest {
             )
         }
 
-        GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .withArguments("gloc")
-                .build()
-
+        runner(tempDir, "gloc").build()
         val glocFileText = File(tempDir, "build/gloc/gloc.txt")
         assert(!glocFileText.exists())
     }
@@ -123,17 +117,8 @@ class PluginTest {
             )
         }
 
-        val result = GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .withArguments("gloc")
-                .build()
-
-        val resultUpToDate = GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .withArguments("gloc")
-                .build()
+        val result = runner(tempDir, "gloc").build()
+        val resultUpToDate = runner(tempDir, "gloc").build()
 
         assertThat(result.task(":gloc")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
         assertThat(resultUpToDate.task(":gloc")!!.outcome ).isEqualTo(TaskOutcome.UP_TO_DATE)
@@ -161,12 +146,7 @@ class PluginTest {
             writeText("This \n is \n droidcon \n italy \n turin")
         }
 
-        GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .withArguments("gloc")
-                .build()
-
+        runner(tempDir, "gloc").build()
         val glocFileText = File(tempDir, "build/gloc/gloc.txt")
         assertThat(glocFileText.readText()).contains("5")
     }
@@ -198,12 +178,7 @@ class PluginTest {
             writeText("Another\nfile\nwith\nnew\nlines")
         }
 
-        GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .withArguments("gloc")
-                .build()
-
+        runner(tempDir, "gloc").build()
         val glocFileText = File(tempDir, "build/gloc/gloc.txt")
         assert(glocFileText.readText().contains("10"))
     }
@@ -240,12 +215,7 @@ class PluginTest {
             writeText("Awesome\nnew\nlines")
         }
 
-        GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .withArguments("gloc")
-                .build()
-
+        runner(tempDir, "gloc").build()
         val glocFileText = File(tempDir, "build/gloc/gloc.txt")
         assert(glocFileText.readText().contains("10"))
         assert(glocFileText.readText().contains("3"))
@@ -283,22 +253,13 @@ class PluginTest {
             )
         }
 
-        val build = GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .withArguments("gloc", "--build-cache")
-                .build()
+        val build = runner(tempDir, "gloc", "--build-cache").build()
         assertThat(build.task(":gloc")!!.outcome)
                 .isEqualTo(TaskOutcome.SUCCESS)
 
         // Clean build dir and run again - should be read from build cache
         File(tempDir, "build/").deleteRecursively()
-        val build2 = GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .withArguments("gloc", "--build-cache")
-                .build()
-
+        val build2 = runner(tempDir, "gloc", "--build-cache").build()
         assertThat(build2.task(":gloc")!!.outcome)
                 .isEqualTo(TaskOutcome.FROM_CACHE)
     }
@@ -335,12 +296,7 @@ class PluginTest {
             writeText("Awesome\nnew\nlines")
         }
 
-        GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .withArguments("gloc")
-                .build()
-
+        runner(tempDir, "gloc").build()
         val glocFileText = File(tempDir, "build/gloc/gloc.txt")
         println(glocFileText.readText())
         assert(glocFileText.readText().contains("5"))
@@ -381,12 +337,7 @@ class PluginTest {
             writeText("This\nis\na\nnew\nfile")
         }
 
-        val buildResult = GradleRunner.create()
-                .withProjectDir(tempDir)
-                .withPluginClasspath()
-                .withArguments("gloc")
-                .build()
-
+        val buildResult = runner(tempDir, "gloc").build()
         val glocFileText = File(tempDir, "build/gloc/gloc.txt")
         assert(glocFileText.readText().contains("5"))
         println(buildResult.output)
