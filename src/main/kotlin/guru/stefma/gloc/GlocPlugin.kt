@@ -22,12 +22,10 @@ open class GlocPlugin : Plugin<Project> {
             create("glocInput", GlocInputTask::class.java)
         }
 
-        with(project.tasks) {
-            create(GlocTask.defaultName, GlocTask::class.java) {
-                it.group = "Development"
-                it.description = "Get the lines of code for files"
-                it.dependsOn(inputTask)
-            }
+        project.tasks.create(GlocTask.defaultName, GlocTask::class.java) {
+            it.group = "Development"
+            it.description = "Get the lines of code for files"
+            it.dependsOn(inputTask)
         }
     }
 
