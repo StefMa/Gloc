@@ -14,7 +14,7 @@ private const val inputDirsFile = "gloc/inputdirs.txt"
 open class GlocTask : DefaultTask() {
 
     @OutputFile
-    var output = project.file("${project.buildDir}/$outputFile")
+    val output = project.file("${project.buildDir}/$outputFile")
 
     @InputFile
     var inputDirs = project.file("${project.buildDir}/$inputDirsFile")
