@@ -22,7 +22,7 @@ open class GlocTask : DefaultTask() {
     @TaskAction
     fun action() {
         val extension = project.extensions.run {
-            findByName("gloc") as GlocExtension
+            findByName(GlocExtension.name) as GlocExtension
         }
 
         if (extension.enabled) {
@@ -49,6 +49,10 @@ open class GlocTask : DefaultTask() {
                 }
     }
 
+    companion object {
+        const val defaultName = "gloc"
+    }
+
 }
 
 /**
@@ -64,7 +68,7 @@ open class GlocInputTask : DefaultTask() {
             writeText("")
         }
 
-        val input = (project.extensions.findByName("gloc") as GlocExtension).dirs
+        val input = (project.extensions.findByName(GlocExtension.name) as GlocExtension).dirs
         input.forEach { inputFile.appendText(it) }
     }
 

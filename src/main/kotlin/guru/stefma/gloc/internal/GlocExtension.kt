@@ -6,4 +6,8 @@ open class GlocExtension {
 
     var dirs: Array<String> = emptyArray()
 
+    companion object {
+        const val name = "gloc"
+    }
+
 }

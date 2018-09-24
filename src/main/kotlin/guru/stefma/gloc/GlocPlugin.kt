@@ -10,7 +10,7 @@ open class GlocPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         val extension = project.extensions.run {
-            create("gloc", GlocExtension::class.java)
+            create(GlocExtension.name, GlocExtension::class.java)
         }
 
         project.afterEvaluate {
@@ -23,7 +23,7 @@ open class GlocPlugin : Plugin<Project> {
         }
 
         with(project.tasks) {
-            create("gloc", GlocTask::class.java) {
+            create(GlocTask.defaultName, GlocTask::class.java) {
                 it.group = "Development"
                 it.description = "Get the lines of code for files"
                 it.dependsOn(inputTask)
