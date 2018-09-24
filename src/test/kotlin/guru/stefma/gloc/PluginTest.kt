@@ -152,6 +152,41 @@ class PluginTest {
     }
 
     @Test
+    fun `task should run again after test file was modified`(tempDir: File) {
+        File(tempDir, "build.gradle").run {
+            writeText(
+                    """
+                        plugins {
+                            id "guru.stefma.gloc"
+                        }
+
+                        gloc {
+                            enabled = true
+                            dirs = [projectDir.path + "/source"]
+                        }
+                        """
+            )
+        }
+        val testXml = File(tempDir, "source/test.xml").apply {
+            parentFile.mkdirs()
+            createNewFile()
+            writeText("This \n is \n droidcon \n italy \n turin")
+        }
+
+        val result = runner(tempDir, "gloc").build()
+        assertThat(result.task(":gloc")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        val glocFileText = File(tempDir, "build/gloc/gloc.txt")
+        assertThat(glocFileText.readText()).contains("5")
+
+        // updating same file
+        testXml.appendText("\nta\nda-a-am")
+
+        val result2 = runner(tempDir, "gloc").build()
+        assertThat(result2.task(":gloc")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(glocFileText.readText()).contains("7")
+    }
+
+    @Test
     fun `task should read recursive files and should write loc in it`(tempDir: File) {
         File(tempDir, "build.gradle").run {
             writeText(
