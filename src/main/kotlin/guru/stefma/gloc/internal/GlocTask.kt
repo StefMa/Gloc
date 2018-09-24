@@ -1,52 +1,69 @@
 package guru.stefma.gloc.internal
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import java.io.File
 
-private const val outputFile = "gloc/gloc.txt"
-private const val inputDirsFile = "gloc/inputdirs.txt"
-
+/**
+ * the task is intended to be configured only via plugin's extension (see [GlocExtension])
+ */
 @CacheableTask
 open class GlocTask : DefaultTask() {
 
     @OutputFile
-    val output = project.file("${project.buildDir}/$outputFile")
+    val output: File = project.file("${project.buildDir}/gloc/gloc.txt")
 
-    @InputFile
-    var inputDirs = project.file("${project.buildDir}/$inputDirsFile")
+    @Nested // for now it is not possible to put the annotation above dirsWithContent directly
+    var boilerplate = emptyList<DirWithContent>()
+        get() = dirsWithContent
 
-    @TaskAction
-    fun action() {
-        val extension = project.extensions.run {
-            findByName(GlocExtension.name) as GlocExtension
-        }
+    private val ext = project.extensions.findByName(GlocExtension.name) as GlocExtension
 
-        if (extension.enabled) {
-            createPrettyOutputFile(extension.dirs)
-            println("Output can be found at ${output.absolutePath}")
+    private val dirsWithContent by lazy { checkConfiguredDirs().map { DirWithContent(it) } }
+
+    /**
+     * @throws IllegalStateException if either no input directory is configured or configured input is not a directory
+     * @return list of configured directories to get LOC statistics from
+     */
+    private fun checkConfiguredDirs(): List<File> {
+        val dirs = ext.dirs
+        val enabled = ext.enabled
+        check(dirs.isNotEmpty() || !enabled) { "gloc.dirs should be set!" }
+
+        return dirs.map {
+            File(it).apply {
+                check(isDirectory) { "$it input should be directory!" }
+            }
         }
     }
 
-    private fun createPrettyOutputFile(dirs: Array<String>) {
-        output.createNewFile()
-        output.writeText("")
+    @TaskAction
+    fun action() {
+        if (!ext.enabled) return
+        createOutputFile()
+        cleanOutputFile()
+        dirsWithContent.forEach { appendToOutput(it) }
+        println("Output can be found at ${output.absolutePath}")
+    }
 
-        if (dirs.isEmpty())
-            throw IllegalArgumentException("gloc.dirs should be set!")
+    private fun createOutputFile() = output.run {
+        if (!parentFile.exists()) {
+            parentFile.mkdirs()
+        }
+        if (!exists()) {
+            createNewFile()
+        }
+    }
 
-        dirs.countLinesOrderedByExtension()
-                .forEach { (dir, map) ->
-                    output.appendText("Directory '${File(dir).name}':")
-                    output.appendText("\n")
-                    map.forEach {
-                        output.appendText("'${it.key}' has '${it.value}' LOC in sum")
-                        output.appendText("\n")
-                    }
-                }
+    private fun cleanOutputFile() = output.writeText("")
+
+    private fun appendToOutput(input: DirWithContent) = output.run {
+        appendText("Directory '${input.dir.name}':")
+        appendText("\n")
+        input.readLoc().forEach { key, value ->
+            appendText("'$key' has '$value' LOC in sum")
+            appendText("\n")
+        }
     }
 
     companion object {
@@ -55,28 +72,27 @@ open class GlocTask : DefaultTask() {
 
 }
 
-/**
- * A simple helper task to create a stable input file for the [GlocTask].
- */
-open class GlocInputTask : DefaultTask() {
+private val sum = { x: Int, y: Int -> x + y }
 
-    @TaskAction
-    fun writeInput() {
-        val inputFile = project.file("${project.buildDir}/$inputDirsFile").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("")
+/**
+ * the class serves two purposes:
+ * a) tracks changes inside configured dir (see @Input and @InputFiles annotated [dir] and [content] properties)
+ * b) provides statistics for LOC in dir with [readLoc]
+ */
+data class DirWithContent(@Input val dir: File) {
+    /**
+     * all files in directory, recursively
+     */
+    @InputFiles
+    val content = dir.walkTopDown().asSequence().filter { it.isFile }.toList()
+
+    /**
+     * provide Lines of Code stats for directory content
+     */
+    fun readLoc(): Map<String, Int> = content.fold(mutableMapOf()) { map, file ->
+        map.apply {
+            merge(file.extension, file.readLines().size, sum)
         }
-
-        val input = (project.extensions.findByName(GlocExtension.name) as GlocExtension).dirs
-        input.forEach { inputFile.appendText(it) }
     }
-
 }
 
-/**
- * Read all files for each given dirPath and sort by extension and count the line of code of them.
- */
-private fun Array<String>.countLinesOrderedByExtension(): List<Pair<String, Map<String, Int>>> {
-    return map { dirPath -> dirPath to File(dirPath).readFileExtensionsWithLinesInDir() }
-}
