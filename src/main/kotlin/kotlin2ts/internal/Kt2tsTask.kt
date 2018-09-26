@@ -26,9 +26,9 @@ open class Kt2tsTask : DefaultTask() {
      * @return list of configured directories to get LOC statistics from
      */
     private fun checkConfiguredDirs(): List<File> {
-        val dirs = ext.dirs
+        val dirs = ext.packs
         val enabled = ext.enabled
-        check(dirs.isNotEmpty() || !enabled) { "kt2ts.dirs should be set!" }
+        check(dirs.isNotEmpty() || !enabled) { "kt2ts.packs should be set!" }
 
         return dirs.map {
             File(it).apply {

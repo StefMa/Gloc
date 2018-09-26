@@ -57,7 +57,7 @@ class PluginTest {
         }
 
         val failResult = runner(tempDir, "kt2ts").buildAndFail()
-        assert(failResult.output.contains("kt2ts.dirs should be set!"))
+        assert(failResult.output.contains("kt2ts.packs should be set!"))
     }
 
     @Test
@@ -135,7 +135,7 @@ class PluginTest {
 
                         kt2ts {
                             enabled = true
-                            dirs = [projectDir.path + "/source"]
+                            packs = [projectDir.path + "/source"]
                         }
                         """
             )
@@ -162,7 +162,7 @@ class PluginTest {
 
                         kt2ts {
                             enabled = true
-                            dirs = [projectDir.path + "/source"]
+                            packs = [projectDir.path + "/source"]
                         }
                         """
             )
@@ -197,7 +197,7 @@ class PluginTest {
 
                         kt2ts {
                             enabled = true
-                            dirs = [projectDir.path + "/source"]
+                            packs = [projectDir.path + "/source"]
                         }
                         """
             )
@@ -229,7 +229,7 @@ class PluginTest {
 
                         kt2ts {
                             enabled = true
-                            dirs = [projectDir.path + "/source", projectDir.path + "/notSource"]
+                            packs = [projectDir.path + "/source", projectDir.path + "/notSource"]
                         }
                         """
             )
@@ -267,7 +267,7 @@ class PluginTest {
 
                         kt2ts {
                             enabled = true
-                            dirs = [projectDir.path + "/source"]
+                            packs = [projectDir.path + "/source"]
                         }
                         """
             )
@@ -310,7 +310,7 @@ class PluginTest {
 
                         kt2ts {
                             enabled = true
-                            dirs = [projectDir.path + "/source", projectDir.path + "/notSource"]
+                            packs = [projectDir.path + "/source", projectDir.path + "/notSource"]
                         }
                         """
             )
@@ -361,7 +361,7 @@ class PluginTest {
 
                         kt2ts {
                             enabled = true
-                            dirs = [projectDir.path + "/$path"]
+                            packs = [projectDir.path + "/$path"]
                         }
                         """
             )
