@@ -1,4 +1,4 @@
-package guru.stefma.gloc.internal
+package kotlin2ts.internal
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.*

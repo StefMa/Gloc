@@ -23,7 +23,7 @@ pluginManagement {
 
 // build.gradke.kts
 plugins {
-  id("guru.stefma.gloc") version "0.0.1"
+  id("kotlin2ts") version "0.0.1"
 }
 
 gloc {

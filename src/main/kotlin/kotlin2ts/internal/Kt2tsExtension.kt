@@ -1,4 +1,4 @@
-package guru.stefma.gloc.internal
+package kotlin2ts.internal
 
 open class Kt2tsExtension {
 

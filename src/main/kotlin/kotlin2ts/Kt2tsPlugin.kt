@@ -1,7 +1,7 @@
-package guru.stefma.gloc
+package kotlin2ts
 
-import guru.stefma.gloc.internal.Kt2tsExtension
-import guru.stefma.gloc.internal.Kt2tsTask
+import kotlin2ts.internal.Kt2tsExtension
+import kotlin2ts.internal.Kt2tsTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 

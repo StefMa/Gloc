@@ -1,6 +1,6 @@
-package guru.stefma.gloc
+package kotlin2ts
 
-import guru.stefma.gloc.extension.TemporaryDir
+import kotlin2ts.extension.TemporaryDir
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -30,7 +30,7 @@ class PluginTest {
             writeText(
                     """
                         plugins {
-                            id("guru.stefma.gloc")
+                            id("kotlin2ts")
                         }
                         """
             )
@@ -46,7 +46,7 @@ class PluginTest {
             writeText(
                     """
                         plugins {
-                            id "guru.stefma.gloc"
+                            id "kotlin2ts"
                         }
 
                         gloc {
@@ -66,7 +66,7 @@ class PluginTest {
             writeText(
                     """
                         plugins {
-                            id "guru.stefma.gloc"
+                            id "kotlin2ts"
                         }
 
                         gloc {
@@ -86,7 +86,7 @@ class PluginTest {
             writeText(
                     """
                         plugins {
-                            id "guru.stefma.gloc"
+                            id "kotlin2ts"
                         }
 
                         gloc {
@@ -107,7 +107,7 @@ class PluginTest {
             writeText(
                     """
                         plugins {
-                            id "guru.stefma.gloc"
+                            id "kotlin2ts"
                         }
 
                         gloc {
@@ -130,7 +130,7 @@ class PluginTest {
             writeText(
                     """
                         plugins {
-                            id "guru.stefma.gloc"
+                            id "kotlin2ts"
                         }
 
                         gloc {
@@ -157,7 +157,7 @@ class PluginTest {
             writeText(
                     """
                         plugins {
-                            id "guru.stefma.gloc"
+                            id "kotlin2ts"
                         }
 
                         gloc {
@@ -192,7 +192,7 @@ class PluginTest {
             writeText(
                     """
                         plugins {
-                            id "guru.stefma.gloc"
+                            id "kotlin2ts"
                         }
 
                         gloc {
@@ -224,7 +224,7 @@ class PluginTest {
             writeText(
                     """
                         plugins {
-                            id "guru.stefma.gloc"
+                            id "kotlin2ts"
                         }
 
                         gloc {
@@ -262,7 +262,7 @@ class PluginTest {
             writeText(
                     """
                         plugins {
-                            id "guru.stefma.gloc"
+                            id "kotlin2ts"
                         }
 
                         gloc {
@@ -305,7 +305,7 @@ class PluginTest {
             writeText(
                     """
                         plugins {
-                            id "guru.stefma.gloc"
+                            id "kotlin2ts"
                         }
 
                         gloc {
@@ -356,7 +356,7 @@ class PluginTest {
             writeText(
                     """
                         plugins {
-                            id "guru.stefma.gloc"
+                            id "kotlin2ts"
                         }
 
                         gloc {

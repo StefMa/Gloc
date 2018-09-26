@@ -18,13 +18,13 @@ dependencies {
 
 (tasks.findByName("test") as Test).useJUnitPlatform()
 
-group = "guru.stefma.gloc"
+group = "kotlin2ts"
 version = "0.0.1"
 gradlePlugin {
     plugins {
         create("gloc") {
-            id = "guru.stefma.gloc"
-            implementationClass = "guru.stefma.gloc.Kt2tsPlugin"
+            id = "kotlin2ts"
+            implementationClass = "kotlin2ts.Kt2tsPlugin"
         }
     }
 }
