@@ -22,7 +22,7 @@ group = "kotlin2ts"
 version = "0.0.1"
 gradlePlugin {
     plugins {
-        create("gloc") {
+        create("kt2ts") {
             id = "kotlin2ts"
             implementationClass = "kotlin2ts.Kt2tsPlugin"
         }

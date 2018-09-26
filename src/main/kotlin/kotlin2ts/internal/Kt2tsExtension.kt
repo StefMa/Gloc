@@ -7,7 +7,7 @@ open class Kt2tsExtension {
     var dirs: Array<String> = emptyArray()
 
     companion object {
-        const val name = "gloc"
+        const val name = "kt2ts"
     }
 
 }

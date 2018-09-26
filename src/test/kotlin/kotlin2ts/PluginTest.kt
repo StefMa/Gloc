@@ -49,15 +49,15 @@ class PluginTest {
                             id "kotlin2ts"
                         }
 
-                        gloc {
+                        kt2ts {
                             enabled = true
                         }
                         """
             )
         }
 
-        val failResult = runner(tempDir, "gloc").buildAndFail()
-        assert(failResult.output.contains("gloc.dirs should be set!"))
+        val failResult = runner(tempDir, "kt2ts").buildAndFail()
+        assert(failResult.output.contains("kt2ts.dirs should be set!"))
     }
 
     @Test
@@ -69,7 +69,7 @@ class PluginTest {
                             id "kotlin2ts"
                         }
 
-                        gloc {
+                        kt2ts {
                             enabled = false
                         }
                         """
@@ -89,16 +89,16 @@ class PluginTest {
                             id "kotlin2ts"
                         }
 
-                        gloc {
+                        kt2ts {
                             enabled = false
                         }
                         """
             )
         }
 
-        runner(tempDir, "gloc").build()
-        val glocFileText = File(tempDir, "build/gloc/gloc.txt")
-        assert(!glocFileText.exists())
+        runner(tempDir, "kt2ts").build()
+        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
+        assert(!kt2tsFileText.exists())
     }
 
     @Test
@@ -110,18 +110,18 @@ class PluginTest {
                             id "kotlin2ts"
                         }
 
-                        gloc {
+                        kt2ts {
                             enabled = false
                         }
                         """
             )
         }
 
-        val result = runner(tempDir, "gloc").build()
-        val resultUpToDate = runner(tempDir, "gloc").build()
+        val result = runner(tempDir, "kt2ts").build()
+        val resultUpToDate = runner(tempDir, "kt2ts").build()
 
-        assertThat(result.task(":gloc")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
-        assertThat(resultUpToDate.task(":gloc")!!.outcome ).isEqualTo(TaskOutcome.UP_TO_DATE)
+        assertThat(result.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(resultUpToDate.task(":kt2ts")!!.outcome ).isEqualTo(TaskOutcome.UP_TO_DATE)
     }
 
     @Test
@@ -133,7 +133,7 @@ class PluginTest {
                             id "kotlin2ts"
                         }
 
-                        gloc {
+                        kt2ts {
                             enabled = true
                             dirs = [projectDir.path + "/source"]
                         }
@@ -146,9 +146,9 @@ class PluginTest {
             writeText("This \n is \n droidcon \n italy \n turin")
         }
 
-        runner(tempDir, "gloc").build()
-        val glocFileText = File(tempDir, "build/gloc/gloc.txt")
-        assertThat(glocFileText.readText()).contains("5")
+        runner(tempDir, "kt2ts").build()
+        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
+        assertThat(kt2tsFileText.readText()).contains("5")
     }
 
     @Test
@@ -160,7 +160,7 @@ class PluginTest {
                             id "kotlin2ts"
                         }
 
-                        gloc {
+                        kt2ts {
                             enabled = true
                             dirs = [projectDir.path + "/source"]
                         }
@@ -173,17 +173,17 @@ class PluginTest {
             writeText("This \n is \n droidcon \n italy \n turin")
         }
 
-        val result = runner(tempDir, "gloc").build()
-        assertThat(result.task(":gloc")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
-        val glocFileText = File(tempDir, "build/gloc/gloc.txt")
-        assertThat(glocFileText.readText()).contains("5")
+        val result = runner(tempDir, "kt2ts").build()
+        assertThat(result.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
+        assertThat(kt2tsFileText.readText()).contains("5")
 
         // updating same file
         testXml.appendText("\nta\nda-a-am")
 
-        val result2 = runner(tempDir, "gloc").build()
-        assertThat(result2.task(":gloc")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
-        assertThat(glocFileText.readText()).contains("7")
+        val result2 = runner(tempDir, "kt2ts").build()
+        assertThat(result2.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(kt2tsFileText.readText()).contains("7")
     }
 
     @Test
@@ -195,7 +195,7 @@ class PluginTest {
                             id "kotlin2ts"
                         }
 
-                        gloc {
+                        kt2ts {
                             enabled = true
                             dirs = [projectDir.path + "/source"]
                         }
@@ -213,9 +213,9 @@ class PluginTest {
             writeText("Another\nfile\nwith\nnew\nlines")
         }
 
-        runner(tempDir, "gloc").build()
-        val glocFileText = File(tempDir, "build/gloc/gloc.txt")
-        assert(glocFileText.readText().contains("10"))
+        runner(tempDir, "kt2ts").build()
+        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
+        assert(kt2tsFileText.readText().contains("10"))
     }
 
     @Test
@@ -227,7 +227,7 @@ class PluginTest {
                             id "kotlin2ts"
                         }
 
-                        gloc {
+                        kt2ts {
                             enabled = true
                             dirs = [projectDir.path + "/source", projectDir.path + "/notSource"]
                         }
@@ -250,10 +250,10 @@ class PluginTest {
             writeText("Awesome\nnew\nlines")
         }
 
-        runner(tempDir, "gloc").build()
-        val glocFileText = File(tempDir, "build/gloc/gloc.txt")
-        assert(glocFileText.readText().contains("10"))
-        assert(glocFileText.readText().contains("3"))
+        runner(tempDir, "kt2ts").build()
+        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
+        assert(kt2tsFileText.readText().contains("10"))
+        assert(kt2tsFileText.readText().contains("3"))
     }
 
     @Test
@@ -265,7 +265,7 @@ class PluginTest {
                             id "kotlin2ts"
                         }
 
-                        gloc {
+                        kt2ts {
                             enabled = true
                             dirs = [projectDir.path + "/source"]
                         }
@@ -288,14 +288,14 @@ class PluginTest {
             )
         }
 
-        val build = runner(tempDir, "gloc", "--build-cache").build()
-        assertThat(build.task(":gloc")!!.outcome)
+        val build = runner(tempDir, "kt2ts", "--build-cache").build()
+        assertThat(build.task(":kt2ts")!!.outcome)
                 .isEqualTo(TaskOutcome.SUCCESS)
 
         // Clean build dir and run again - should be read from build cache
         File(tempDir, "build/").deleteRecursively()
-        val build2 = runner(tempDir, "gloc", "--build-cache").build()
-        assertThat(build2.task(":gloc")!!.outcome)
+        val build2 = runner(tempDir, "kt2ts", "--build-cache").build()
+        assertThat(build2.task(":kt2ts")!!.outcome)
                 .isEqualTo(TaskOutcome.FROM_CACHE)
     }
 
@@ -308,7 +308,7 @@ class PluginTest {
                             id "kotlin2ts"
                         }
 
-                        gloc {
+                        kt2ts {
                             enabled = true
                             dirs = [projectDir.path + "/source", projectDir.path + "/notSource"]
                         }
@@ -331,22 +331,22 @@ class PluginTest {
             writeText("Awesome\nnew\nlines")
         }
 
-        runner(tempDir, "gloc").build()
-        val glocFileText = File(tempDir, "build/gloc/gloc.txt")
-        println(glocFileText.readText())
-        assert(glocFileText.readText().contains("5"))
-        assert(glocFileText.readText().contains("6"))
-        assert(glocFileText.readText().contains("3"))
+        runner(tempDir, "kt2ts").build()
+        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
+        println(kt2tsFileText.readText())
+        assert(kt2tsFileText.readText().contains("5"))
+        assert(kt2tsFileText.readText().contains("6"))
+        assert(kt2tsFileText.readText().contains("3"))
     }
 
     @Test
     fun `task run twice with different dirs should be run twice`(tempDir: File) {
         runTest(tempDir, "source") {
-            assertThat(it.task(":gloc")!!.outcome)
+            assertThat(it.task(":kt2ts")!!.outcome)
                     .isEqualTo(TaskOutcome.SUCCESS)
         }
         runTest(tempDir, "anotherSource") {
-            assertThat(it.task(":gloc")!!.outcome)
+            assertThat(it.task(":kt2ts")!!.outcome)
                     .isEqualTo(TaskOutcome.SUCCESS)
         }
     }
@@ -359,7 +359,7 @@ class PluginTest {
                             id "kotlin2ts"
                         }
 
-                        gloc {
+                        kt2ts {
                             enabled = true
                             dirs = [projectDir.path + "/$path"]
                         }
@@ -372,9 +372,9 @@ class PluginTest {
             writeText("This\nis\na\nnew\nfile")
         }
 
-        val buildResult = runner(tempDir, "gloc").build()
-        val glocFileText = File(tempDir, "build/gloc/gloc.txt")
-        assert(glocFileText.readText().contains("5"))
+        val buildResult = runner(tempDir, "kt2ts").build()
+        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
+        assert(kt2tsFileText.readText().contains("5"))
         println(buildResult.output)
         stuff(buildResult)
     }

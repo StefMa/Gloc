@@ -26,7 +26,7 @@ plugins {
   id("kotlin2ts") version "0.0.1"
 }
 
-gloc {
+kt2ts {
   enabled = true
   dirs = arrayOf("src/main", "src/test")
 }
@@ -38,7 +38,7 @@ The extension provide two properties:
 * dirs - a array of file pathes which defines where to count the lines of code
 
 ## Task
-The plugin provides the task called **gloc**.<br>
+The plugin provides the task called **kt2ts**.<br>
 If you can run it for the first time it will - well - run and **SUCCESS**. Meaning the task was executed.
 
 If you run it for the second time - without cleaning the `buid/` dir and changing the input (the `dirs` property) - it will be **UP-TO-DATE**.

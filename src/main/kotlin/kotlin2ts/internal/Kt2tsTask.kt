@@ -11,7 +11,7 @@ import java.io.File
 open class Kt2tsTask : DefaultTask() {
 
     @OutputFile
-    val output: File = project.file("${project.buildDir}/gloc/gloc.txt")
+    val output: File = project.file("${project.buildDir}/kt2ts/kt2ts.txt")
 
     @Nested // for now it is not possible to put the annotation above dirsWithContent directly
     var boilerplate = emptyList<DirWithContent>()
@@ -28,7 +28,7 @@ open class Kt2tsTask : DefaultTask() {
     private fun checkConfiguredDirs(): List<File> {
         val dirs = ext.dirs
         val enabled = ext.enabled
-        check(dirs.isNotEmpty() || !enabled) { "gloc.dirs should be set!" }
+        check(dirs.isNotEmpty() || !enabled) { "kt2ts.dirs should be set!" }
 
         return dirs.map {
             File(it).apply {
@@ -67,7 +67,7 @@ open class Kt2tsTask : DefaultTask() {
     }
 
     companion object {
-        const val defaultName = "gloc"
+        const val defaultName = "kt2ts"
     }
 
 }
