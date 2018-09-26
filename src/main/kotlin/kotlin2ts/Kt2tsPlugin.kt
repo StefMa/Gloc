@@ -13,7 +13,6 @@ open class Kt2tsPlugin : Plugin<Project> {
         }
 
         project.afterEvaluate {
-            if (!extension.enabled) return@afterEvaluate
             println("Hello Plugin \\o/")
         }
 

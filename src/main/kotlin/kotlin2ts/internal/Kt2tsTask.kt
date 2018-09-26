@@ -27,7 +27,6 @@ open class Kt2tsTask : DefaultTask() {
      */
     private fun checkConfiguredDirs(): List<File> {
         val dirs = ext.packs
-        val enabled = ext.enabled
         check(dirs.isNotEmpty() || !enabled) { "kt2ts.packs should be set!" }
 
         return dirs.map {
@@ -39,7 +38,6 @@ open class Kt2tsTask : DefaultTask() {
 
     @TaskAction
     fun action() {
-        if (!ext.enabled) return
         createOutputFile()
         cleanOutputFile()
         dirsWithContent.forEach { appendToOutput(it) }

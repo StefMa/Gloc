@@ -25,83 +25,6 @@ class PluginTest {
     }
 
     @Test
-    fun `apply and enabled true - should print hello plugin`(tempDir: File) {
-        File(tempDir, "build.gradle.kts").run {
-            writeText(
-                    """
-                        plugins {
-                            id("kotlin2ts")
-                        }
-                        """
-            )
-        }
-
-        val buildResult = runner(tempDir).build()
-        assertThat(buildResult.output).contains("Hello Plugin \\o/")
-    }
-
-    @Test
-    fun `apply enabled without dirs - should fail with exception`(tempDir: File) {
-        File(tempDir, "build.gradle").run {
-            writeText(
-                    """
-                        plugins {
-                            id "kotlin2ts"
-                        }
-
-                        kt2ts {
-                            enabled = true
-                        }
-                        """
-            )
-        }
-
-        val failResult = runner(tempDir, "kt2ts").buildAndFail()
-        assert(failResult.output.contains("kt2ts.packs should be set!"))
-    }
-
-    @Test
-    fun `apply and enabled false should not print hello plugin`(tempDir: File) {
-        File(tempDir, "build.gradle").run {
-            writeText(
-                    """
-                        plugins {
-                            id "kotlin2ts"
-                        }
-
-                        kt2ts {
-                            enabled = false
-                        }
-                        """
-            )
-        }
-
-        val buildResult = runner(tempDir).build()
-        assertThat(buildResult.output).doesNotContain("Hello Plugin \\o/")
-    }
-
-    @Test
-    fun `apply disabled run task - should have a empty text in build dir`(tempDir: File) {
-        File(tempDir, "build.gradle").run {
-            writeText(
-                    """
-                        plugins {
-                            id "kotlin2ts"
-                        }
-
-                        kt2ts {
-                            enabled = false
-                        }
-                        """
-            )
-        }
-
-        runner(tempDir, "kt2ts").build()
-        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
-        assert(!kt2tsFileText.exists())
-    }
-
-    @Test
     fun `apply run task twice - should be up to date`(tempDir: File) {
         File(tempDir, "build.gradle").run {
             writeText(
@@ -111,10 +34,16 @@ class PluginTest {
                         }
 
                         kt2ts {
-                            enabled = false
+                            packs = [projectDir.path + "/source"]
                         }
                         """
             )
+        }
+
+        File(tempDir, "source/test.xml").apply {
+            parentFile.mkdirs()
+            createNewFile()
+            writeText("This \n is \n droidcon \n italy \n turin")
         }
 
         val result = runner(tempDir, "kt2ts").build()
@@ -134,7 +63,6 @@ class PluginTest {
                         }
 
                         kt2ts {
-                            enabled = true
                             packs = [projectDir.path + "/source"]
                         }
                         """
@@ -161,7 +89,6 @@ class PluginTest {
                         }
 
                         kt2ts {
-                            enabled = true
                             packs = [projectDir.path + "/source"]
                         }
                         """
@@ -196,7 +123,6 @@ class PluginTest {
                         }
 
                         kt2ts {
-                            enabled = true
                             packs = [projectDir.path + "/source"]
                         }
                         """
@@ -228,7 +154,6 @@ class PluginTest {
                         }
 
                         kt2ts {
-                            enabled = true
                             packs = [projectDir.path + "/source", projectDir.path + "/notSource"]
                         }
                         """
@@ -266,7 +191,6 @@ class PluginTest {
                         }
 
                         kt2ts {
-                            enabled = true
                             packs = [projectDir.path + "/source"]
                         }
                         """
@@ -309,7 +233,6 @@ class PluginTest {
                         }
 
                         kt2ts {
-                            enabled = true
                             packs = [projectDir.path + "/source", projectDir.path + "/notSource"]
                         }
                         """
@@ -360,7 +283,6 @@ class PluginTest {
                         }
 
                         kt2ts {
-                            enabled = true
                             packs = [projectDir.path + "/$path"]
                         }
                         """
