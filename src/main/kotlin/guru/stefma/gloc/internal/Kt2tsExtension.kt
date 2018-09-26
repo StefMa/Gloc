@@ -1,6 +1,6 @@
 package guru.stefma.gloc.internal
 
-open class GlocExtension {
+open class Kt2tsExtension {
 
     var enabled: Boolean = true
 

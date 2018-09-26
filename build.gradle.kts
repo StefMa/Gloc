@@ -24,7 +24,7 @@ gradlePlugin {
     plugins {
         create("gloc") {
             id = "guru.stefma.gloc"
-            implementationClass = "guru.stefma.gloc.GlocPlugin"
+            implementationClass = "guru.stefma.gloc.Kt2tsPlugin"
         }
     }
 }

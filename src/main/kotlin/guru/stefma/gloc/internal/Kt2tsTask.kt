@@ -5,10 +5,10 @@ import org.gradle.api.tasks.*
 import java.io.File
 
 /**
- * the task is intended to be configured only via plugin's extension (see [GlocExtension])
+ * the task is intended to be configured only via plugin's extension (see [Kt2tsExtension])
  */
 @CacheableTask
-open class GlocTask : DefaultTask() {
+open class Kt2tsTask : DefaultTask() {
 
     @OutputFile
     val output: File = project.file("${project.buildDir}/gloc/gloc.txt")
@@ -17,7 +17,7 @@ open class GlocTask : DefaultTask() {
     var boilerplate = emptyList<DirWithContent>()
         get() = dirsWithContent
 
-    private val ext = project.extensions.findByName(GlocExtension.name) as GlocExtension
+    private val ext = project.extensions.findByName(Kt2tsExtension.name) as Kt2tsExtension
 
     private val dirsWithContent by lazy { checkConfiguredDirs().map { DirWithContent(it) } }
 
