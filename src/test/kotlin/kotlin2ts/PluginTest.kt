@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.testkit.runner.TaskOutcome.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.io.File
@@ -27,6 +28,10 @@ class PluginTest {
                 }
                 .withDebug(true)
                 .build()
+    }
+
+    private fun BuildResult.assertOutcome(outcome: TaskOutcome) {
+        assertThat(task(":kt2ts")!!.outcome).isEqualTo(outcome)
     }
 
     private fun File.build_gradle(vararg packs: String) {
@@ -75,11 +80,8 @@ class PluginTest {
         tempDir.build_gradle("source")
         tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
 
-        val result = tempDir.runGradleBuild()
-        val resultUpToDate = tempDir.runGradleBuild()
-
-        assertThat(result.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
-        assertThat(resultUpToDate.task(":kt2ts")!!.outcome ).isEqualTo(TaskOutcome.UP_TO_DATE)
+        tempDir.runGradleBuild().assertOutcome(SUCCESS)
+        tempDir.runGradleBuild().assertOutcome(UP_TO_DATE)
     }
 
     @Test
@@ -96,15 +98,13 @@ class PluginTest {
         tempDir.build_gradle("source")
         tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
 
-        val result = tempDir.runGradleBuild()
-        assertThat(result.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        tempDir.runGradleBuild().assertOutcome(SUCCESS)
         tempDir.assertOutputContains("5")
 
         // updating same file
         tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin\nta\nda-a-am")
 
-        val result2 = tempDir.runGradleBuild()
-        assertThat(result2.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        tempDir.runGradleBuild().assertOutcome(SUCCESS)
         tempDir.assertOutputContains("7")
     }
 
@@ -135,15 +135,11 @@ class PluginTest {
         tempDir.src("source/test.xml", "This\nis\na\nnew\nfile")
         tempDir.settings_gradle()
 
-        val build = tempDir.runGradleBuild(true)
-        assertThat(build.task(":kt2ts")!!.outcome)
-                .isEqualTo(TaskOutcome.SUCCESS)
+        tempDir.runGradleBuild(true).assertOutcome(SUCCESS)
 
         // Clean build dir and run again - should be read from build cache
-        File(tempDir, "build/").deleteRecursively()
-        val build2 = tempDir.runGradleBuild(true)
-        assertThat(build2.task(":kt2ts")!!.outcome)
-                .isEqualTo(TaskOutcome.FROM_CACHE)
+        tempDir.resolve("build/").deleteRecursively()
+        tempDir.runGradleBuild(true).assertOutcome(FROM_CACHE)
     }
 
     @Test
@@ -159,24 +155,16 @@ class PluginTest {
 
     @Test
     fun `task run twice with different dirs should be run twice`(tempDir: File) {
-        runTest(tempDir, "source") {
-            assertThat(it.task(":kt2ts")!!.outcome)
-                    .isEqualTo(TaskOutcome.SUCCESS)
-        }
-        runTest(tempDir, "anotherSource") {
-            assertThat(it.task(":kt2ts")!!.outcome)
-                    .isEqualTo(TaskOutcome.SUCCESS)
-        }
+        tempDir.runTestWithSuccessOutcome("source")
+        tempDir.runTestWithSuccessOutcome("anotherSource")
     }
 
-    private fun runTest(tempDir: File, path: String, stuff: (result: BuildResult) -> Unit) {
-        tempDir.build_gradle(path)
-        tempDir.src("$path/test.xml", "This\nis\na\nnew\nfile")
+    private fun File.runTestWithSuccessOutcome(path: String) {
+        build_gradle(path)
+        src("$path/test.xml", "This\nis\na\nnew\nfile")
 
-        val buildResult = tempDir.runGradleBuild()
-        tempDir.assertOutputContains("5")
-        println(buildResult.output)
-        stuff(buildResult)
+        runGradleBuild().assertOutcome(SUCCESS)
+        assertOutputContains("5")
     }
 
 }
