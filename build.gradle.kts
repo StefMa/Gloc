@@ -6,10 +6,13 @@ plugins {
 
 repositories {
     jcenter()
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    implementation("com.github.ntrrgc:ts-generator:1.1.0")
+    implementation("com.google.guava:guava:23.0") { isTransitive = false }
 
     testImplementation("org.assertj:assertj-core:3.9.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.1.0")
