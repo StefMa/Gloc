@@ -24,9 +24,9 @@ class PluginTest {
                 .withDebug(true)
     }
 
-    @Test
-    fun `apply run task twice - should be up to date`(tempDir: File) {
-        File(tempDir, "build.gradle").run {
+    private fun File.build_gradle(vararg packs: String) {
+        resolve("build.gradle").run {
+            val confPacks = packs.asSequence().map { "projectDir.path + \"/$it\"" }.joinToString()
             writeText(
                     """
                         plugins {
@@ -34,17 +34,36 @@ class PluginTest {
                         }
 
                         kt2ts {
-                            packs = [projectDir.path + "/source"]
+                            packs = [$confPacks]
                         }
                         """
             )
         }
+    }
 
-        File(tempDir, "source/test.xml").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("This \n is \n droidcon \n italy \n turin")
+    private fun File.settings_gradle() = run {
+        resolve("settings.gradle").writeText(
+                """
+                        buildCache {
+                            local { directory = "$this/cache" }
+                        }
+                    """)
+    }
+
+    private fun File.src(path: String, content: String) {
+        resolve(path).run {
+            if (!parentFile.exists()) {
+                parentFile.mkdirs()
+            }
+            writeText(content)
         }
+    }
+
+
+    @Test
+    fun `apply run task twice - should be up to date`(tempDir: File) {
+        tempDir.build_gradle("source")
+        tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
 
         val result = runner(tempDir, "kt2ts").build()
         val resultUpToDate = runner(tempDir, "kt2ts").build()
@@ -55,24 +74,8 @@ class PluginTest {
 
     @Test
     fun `task should read test xml file and should write loc in it`(tempDir: File) {
-        File(tempDir, "build.gradle").run {
-            writeText(
-                    """
-                        plugins {
-                            id "kotlin2ts"
-                        }
-
-                        kt2ts {
-                            packs = [projectDir.path + "/source"]
-                        }
-                        """
-            )
-        }
-        File(tempDir, "source/test.xml").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("This \n is \n droidcon \n italy \n turin")
-        }
+        tempDir.build_gradle("source")
+        tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
 
         runner(tempDir, "kt2ts").build()
         val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
@@ -81,24 +84,8 @@ class PluginTest {
 
     @Test
     fun `task should run again after test file was modified`(tempDir: File) {
-        File(tempDir, "build.gradle").run {
-            writeText(
-                    """
-                        plugins {
-                            id "kotlin2ts"
-                        }
-
-                        kt2ts {
-                            packs = [projectDir.path + "/source"]
-                        }
-                        """
-            )
-        }
-        val testXml = File(tempDir, "source/test.xml").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("This \n is \n droidcon \n italy \n turin")
-        }
+        tempDir.build_gradle("source")
+        tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
 
         val result = runner(tempDir, "kt2ts").build()
         assertThat(result.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
@@ -106,7 +93,7 @@ class PluginTest {
         assertThat(kt2tsFileText.readText()).contains("5")
 
         // updating same file
-        testXml.appendText("\nta\nda-a-am")
+        tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin\nta\nda-a-am")
 
         val result2 = runner(tempDir, "kt2ts").build()
         assertThat(result2.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
@@ -115,29 +102,9 @@ class PluginTest {
 
     @Test
     fun `task should read recursive files and should write loc in it`(tempDir: File) {
-        File(tempDir, "build.gradle").run {
-            writeText(
-                    """
-                        plugins {
-                            id "kotlin2ts"
-                        }
-
-                        kt2ts {
-                            packs = [projectDir.path + "/source"]
-                        }
-                        """
-            )
-        }
-        File(tempDir, "source/test.xml").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("This\nis\na\nnew\nfile")
-        }
-        File(tempDir, "source/another/test.xml").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("Another\nfile\nwith\nnew\nlines")
-        }
+        tempDir.build_gradle("source")
+        tempDir.src("source/test.xml", "This\nis\na\nnew\nfile")
+        tempDir.src("source/another/test.xml", "Another\nfile\nwith\nnew\nlines")
 
         runner(tempDir, "kt2ts").build()
         val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
@@ -146,34 +113,10 @@ class PluginTest {
 
     @Test
     fun `task should read recursive files and multiple dirs should write loc in it`(tempDir: File) {
-        File(tempDir, "build.gradle").run {
-            writeText(
-                    """
-                        plugins {
-                            id "kotlin2ts"
-                        }
-
-                        kt2ts {
-                            packs = [projectDir.path + "/source", projectDir.path + "/notSource"]
-                        }
-                        """
-            )
-        }
-        File(tempDir, "source/test.xml").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("This\nis\na\nnew\nfile")
-        }
-        File(tempDir, "source/another/test.xml").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("Another\nfile\nwith\nnew\nlines")
-        }
-        File(tempDir, "notSource/test.xml").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("Awesome\nnew\nlines")
-        }
+        tempDir.build_gradle("source", "notSource")
+        tempDir.src("source/test.xml", "This\nis\na\nnew\nfile")
+        tempDir.src("source/another/test.xml", "Another\nfile\nwith\nnew\nlines")
+        tempDir.src("notSource/test.xml", "Awesome\nnew\nlines")
 
         runner(tempDir, "kt2ts").build()
         val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
@@ -183,34 +126,9 @@ class PluginTest {
 
     @Test
     fun `task should read from build cache`(tempDir: File) {
-        File(tempDir, "build.gradle").run {
-            writeText(
-                    """
-                        plugins {
-                            id "kotlin2ts"
-                        }
-
-                        kt2ts {
-                            packs = [projectDir.path + "/source"]
-                        }
-                        """
-            )
-        }
-        File(tempDir, "source/test.xml").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("This\nis\na\nnew\nfile")
-        }
-
-        File(tempDir, "settings.gradle").run {
-            writeText(
-                    """
-                        buildCache {
-                            local { directory = "$tempDir/cache" }
-                        }
-                    """
-            )
-        }
+        tempDir.build_gradle("source")
+        tempDir.src("source/test.xml", "This\nis\na\nnew\nfile")
+        tempDir.settings_gradle()
 
         val build = runner(tempDir, "kt2ts", "--build-cache").build()
         assertThat(build.task(":kt2ts")!!.outcome)
@@ -225,34 +143,10 @@ class PluginTest {
 
     @Test
     fun `task should read recursive files and multiple dirs should write loc in it2`(tempDir: File) {
-        File(tempDir, "build.gradle").run {
-            writeText(
-                    """
-                        plugins {
-                            id "kotlin2ts"
-                        }
-
-                        kt2ts {
-                            packs = [projectDir.path + "/source", projectDir.path + "/notSource"]
-                        }
-                        """
-            )
-        }
-        File(tempDir, "source/test.xml").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("This\nis\na\nnew\nfile")
-        }
-        File(tempDir, "source/another/test.html").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("Another\nfile\nwith\n6\nnew\nlines")
-        }
-        File(tempDir, "notSource/test.kt").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("Awesome\nnew\nlines")
-        }
+        tempDir.build_gradle("source", "notSource")
+        tempDir.src("source/test.xml", "This\nis\na\nnew\nfile")
+        tempDir.src("source/another/test.html", "Another\nfile\nwith\n6\nnew\nlines")
+        tempDir.src("notSource/test.kt", "Awesome\nnew\nlines")
 
         runner(tempDir, "kt2ts").build()
         val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
@@ -275,24 +169,8 @@ class PluginTest {
     }
 
     private fun runTest(tempDir: File, path: String, stuff: (result: BuildResult) -> Unit) {
-        File(tempDir, "build.gradle").run {
-            writeText(
-                    """
-                        plugins {
-                            id "kotlin2ts"
-                        }
-
-                        kt2ts {
-                            packs = [projectDir.path + "/$path"]
-                        }
-                        """
-            )
-        }
-        File(tempDir, "$path/test.xml").apply {
-            parentFile.mkdirs()
-            createNewFile()
-            writeText("This\nis\na\nnew\nfile")
-        }
+        tempDir.build_gradle(path)
+        tempDir.src("$path/test.xml", "This\nis\na\nnew\nfile")
 
         val buildResult = runner(tempDir, "kt2ts").build()
         val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
