@@ -12,16 +12,21 @@ import java.io.File
 @ExtendWith(TemporaryDir::class)
 class PluginTest {
 
-    private fun runner(tempDir: File, vararg args: String): GradleRunner {
+    private fun File.runGradleBuild(useCache : Boolean = false): BuildResult {
+        val args = mutableListOf("kt2ts")
+        if (useCache) {
+            args.add("--build-cache")
+        }
         return GradleRunner.create()
-                .withProjectDir(tempDir)
+                .withProjectDir(this)
                 .withPluginClasspath()
                 .apply {
                     if (args.isNotEmpty()) {
-                        withArguments(*args)
+                        withArguments(*args.toTypedArray())
                     }
                 }
                 .withDebug(true)
+                .build()
     }
 
     private fun File.build_gradle(vararg packs: String) {
@@ -65,8 +70,8 @@ class PluginTest {
         tempDir.build_gradle("source")
         tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
 
-        val result = runner(tempDir, "kt2ts").build()
-        val resultUpToDate = runner(tempDir, "kt2ts").build()
+        val result = tempDir.runGradleBuild()
+        val resultUpToDate = tempDir.runGradleBuild()
 
         assertThat(result.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
         assertThat(resultUpToDate.task(":kt2ts")!!.outcome ).isEqualTo(TaskOutcome.UP_TO_DATE)
@@ -77,7 +82,7 @@ class PluginTest {
         tempDir.build_gradle("source")
         tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
 
-        runner(tempDir, "kt2ts").build()
+        tempDir.runGradleBuild()
         val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
         assertThat(kt2tsFileText.readText()).contains("5")
     }
@@ -87,7 +92,7 @@ class PluginTest {
         tempDir.build_gradle("source")
         tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
 
-        val result = runner(tempDir, "kt2ts").build()
+        val result = tempDir.runGradleBuild()
         assertThat(result.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
         val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
         assertThat(kt2tsFileText.readText()).contains("5")
@@ -95,7 +100,7 @@ class PluginTest {
         // updating same file
         tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin\nta\nda-a-am")
 
-        val result2 = runner(tempDir, "kt2ts").build()
+        val result2 = tempDir.runGradleBuild()
         assertThat(result2.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
         assertThat(kt2tsFileText.readText()).contains("7")
     }
@@ -106,7 +111,7 @@ class PluginTest {
         tempDir.src("source/test.xml", "This\nis\na\nnew\nfile")
         tempDir.src("source/another/test.xml", "Another\nfile\nwith\nnew\nlines")
 
-        runner(tempDir, "kt2ts").build()
+        tempDir.runGradleBuild()
         val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
         assert(kt2tsFileText.readText().contains("10"))
     }
@@ -118,7 +123,7 @@ class PluginTest {
         tempDir.src("source/another/test.xml", "Another\nfile\nwith\nnew\nlines")
         tempDir.src("notSource/test.xml", "Awesome\nnew\nlines")
 
-        runner(tempDir, "kt2ts").build()
+        tempDir.runGradleBuild()
         val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
         assert(kt2tsFileText.readText().contains("10"))
         assert(kt2tsFileText.readText().contains("3"))
@@ -130,13 +135,13 @@ class PluginTest {
         tempDir.src("source/test.xml", "This\nis\na\nnew\nfile")
         tempDir.settings_gradle()
 
-        val build = runner(tempDir, "kt2ts", "--build-cache").build()
+        val build = tempDir.runGradleBuild(true)
         assertThat(build.task(":kt2ts")!!.outcome)
                 .isEqualTo(TaskOutcome.SUCCESS)
 
         // Clean build dir and run again - should be read from build cache
         File(tempDir, "build/").deleteRecursively()
-        val build2 = runner(tempDir, "kt2ts", "--build-cache").build()
+        val build2 = tempDir.runGradleBuild(true)
         assertThat(build2.task(":kt2ts")!!.outcome)
                 .isEqualTo(TaskOutcome.FROM_CACHE)
     }
@@ -148,7 +153,7 @@ class PluginTest {
         tempDir.src("source/another/test.html", "Another\nfile\nwith\n6\nnew\nlines")
         tempDir.src("notSource/test.kt", "Awesome\nnew\nlines")
 
-        runner(tempDir, "kt2ts").build()
+        tempDir.runGradleBuild()
         val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
         println(kt2tsFileText.readText())
         assert(kt2tsFileText.readText().contains("5"))
@@ -172,7 +177,7 @@ class PluginTest {
         tempDir.build_gradle(path)
         tempDir.src("$path/test.xml", "This\nis\na\nnew\nfile")
 
-        val buildResult = runner(tempDir, "kt2ts").build()
+        val buildResult = tempDir.runGradleBuild()
         val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
         assert(kt2tsFileText.readText().contains("5"))
         println(buildResult.output)
