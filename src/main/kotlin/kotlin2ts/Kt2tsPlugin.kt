@@ -7,19 +7,18 @@ import org.gradle.api.Project
 
 open class Kt2tsPlugin : Plugin<Project> {
 
-    override fun apply(project: Project) {
-        val extension = project.extensions.run {
-            create(Kt2tsExtension.name, Kt2tsExtension::class.java)
-        }
+    override fun apply(project: Project) = project.run {
+        extensions.create(Kt2tsExtension.name, Kt2tsExtension::class.java)
 
-        project.afterEvaluate {
+        afterEvaluate {
             println("Hello Plugin \\o/")
         }
 
-        project.tasks.create(Kt2tsTask.defaultName, Kt2tsTask::class.java) {
+        tasks.create(Kt2tsTask.defaultName, Kt2tsTask::class.java) {
             it.group = "Development"
             it.description = "Get the lines of code for files"
         }
+        Unit
     }
 
 }
