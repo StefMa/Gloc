@@ -13,10 +13,10 @@ import java.io.File
 @ExtendWith(TemporaryDir::class)
 class PluginTest {
 
-    private fun File.runGradleBuild(useCache : Boolean = false): BuildResult {
+    private fun File.runGradleTask(useCache: Boolean = false): BuildResult {
         val args = mutableListOf("kt2ts")
         if (useCache) {
-            args.add("--build-cache")
+            args += "--build-cache"
         }
         return GradleRunner.create()
                 .withProjectDir(this)
@@ -51,14 +51,13 @@ class PluginTest {
         }
     }
 
-    private fun File.settings_gradle() = run {
-        resolve("settings.gradle").writeText(
-                """
+    private fun File.settings_gradle() = resolve("settings.gradle").writeText(
+            """
                         buildCache {
                             local { directory = "$this/cache" }
                         }
-                    """)
-    }
+                 """
+    )
 
     private fun File.src(path: String, content: String) {
         resolve(path).run {
@@ -76,94 +75,93 @@ class PluginTest {
     }
 
     @Test
-    fun `apply run task twice - should be up to date`(tempDir: File) {
-        tempDir.build_gradle("source")
-        tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
+    fun `apply run task twice - should be up to date`(tempDir: File) = tempDir.run {
+        build_gradle("source")
+        src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
 
-        tempDir.runGradleBuild().assertOutcome(SUCCESS)
-        tempDir.runGradleBuild().assertOutcome(UP_TO_DATE)
+        runGradleTask().assertOutcome(SUCCESS)
+        runGradleTask().assertOutcome(UP_TO_DATE)
     }
 
     @Test
-    fun `task should read test xml file and should write loc in it`(tempDir: File) {
-        tempDir.build_gradle("source")
-        tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
+    fun `task should read test xml file and should write loc in it`(tempDir: File) = tempDir.run {
+        build_gradle("source")
+        src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
 
-        tempDir.runGradleBuild()
-        tempDir.assertOutputContains("5")
+        runGradleTask()
+        assertOutputContains("5")
     }
 
     @Test
-    fun `task should run again after test file was modified`(tempDir: File) {
-        tempDir.build_gradle("source")
-        tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
+    fun `task should run again after test file was modified`(tempDir: File) = tempDir.run {
+        build_gradle("source")
+        src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
 
-        tempDir.runGradleBuild().assertOutcome(SUCCESS)
-        tempDir.assertOutputContains("5")
+        runGradleTask().assertOutcome(SUCCESS)
+        assertOutputContains("5")
 
         // updating same file
-        tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin\nta\nda-a-am")
+        src("source/test.xml", "This \n is \n droidcon \n italy \n turin\nta\nda-a-am")
 
-        tempDir.runGradleBuild().assertOutcome(SUCCESS)
-        tempDir.assertOutputContains("7")
+        runGradleTask().assertOutcome(SUCCESS)
+        assertOutputContains("7")
     }
 
     @Test
-    fun `task should read recursive files and should write loc in it`(tempDir: File) {
-        tempDir.build_gradle("source")
-        tempDir.src("source/test.xml", "This\nis\na\nnew\nfile")
-        tempDir.src("source/another/test.xml", "Another\nfile\nwith\nnew\nlines")
+    fun `task should read recursive files and should write loc in it`(tempDir: File) = tempDir.run {
+        build_gradle("source")
+        src("source/test.xml", "This\nis\na\nnew\nfile")
+        src("source/another/test.xml", "Another\nfile\nwith\nnew\nlines")
 
-        tempDir.runGradleBuild()
-        tempDir.assertOutputContains("10")
+        runGradleTask()
+        assertOutputContains("10")
     }
 
     @Test
-    fun `task should read recursive files and multiple dirs should write loc in it`(tempDir: File) {
-        tempDir.build_gradle("source", "notSource")
-        tempDir.src("source/test.xml", "This\nis\na\nnew\nfile")
-        tempDir.src("source/another/test.xml", "Another\nfile\nwith\nnew\nlines")
-        tempDir.src("notSource/test.xml", "Awesome\nnew\nlines")
+    fun `task should read recursive files and multiple dirs should write loc in it`(tempDir: File) = tempDir.run {
+        build_gradle("source", "otherSource")
+        src("source/test.xml", "This\nis\na\nnew\nfile")
+        src("source/another/test.xml", "Another\nfile\nwith\nnew\nlines")
+        src("otherSource/test.xml", "Awesome\nnew\nlines")
 
-        tempDir.runGradleBuild()
-        tempDir.assertOutputContains("10", "3")
+        runGradleTask()
+        assertOutputContains("10", "3")
     }
 
     @Test
-    fun `task should read from build cache`(tempDir: File) {
-        tempDir.build_gradle("source")
-        tempDir.src("source/test.xml", "This\nis\na\nnew\nfile")
-        tempDir.settings_gradle()
+    fun `task should read from build cache`(tempDir: File) = tempDir.run {
+        build_gradle("source")
+        src("source/test.xml", "This\nis\na\nnew\nfile")
+        settings_gradle()
 
-        tempDir.runGradleBuild(true).assertOutcome(SUCCESS)
+        runGradleTask(true).assertOutcome(SUCCESS)
 
         // Clean build dir and run again - should be read from build cache
-        tempDir.resolve("build/").deleteRecursively()
-        tempDir.runGradleBuild(true).assertOutcome(FROM_CACHE)
+        resolve("build/").deleteRecursively()
+        runGradleTask(true).assertOutcome(FROM_CACHE)
     }
 
     @Test
-    fun `task should read recursive files and multiple dirs should write loc in it2`(tempDir: File) {
-        tempDir.build_gradle("source", "notSource")
-        tempDir.src("source/test.xml", "This\nis\na\nnew\nfile")
-        tempDir.src("source/another/test.html", "Another\nfile\nwith\n6\nnew\nlines")
-        tempDir.src("notSource/test.kt", "Awesome\nnew\nlines")
+    fun `task should read recursive files and multiple dirs should write loc in it2`(tempDir: File) = tempDir.run {
+        build_gradle("source", "otherSource")
+        src("source/test.xml", "This\nis\na\nnew\nfile")
+        src("source/another/test.html", "Another\nfile\nwith\n6\nnew\nlines")
+        src("otherSource/test.kt", "Awesome\nnew\nlines")
 
-        tempDir.runGradleBuild()
-        tempDir.assertOutputContains("5", "6", "3")
+        runGradleTask()
+        assertOutputContains("5", "6", "3")
     }
 
     @Test
-    fun `task run twice with different dirs should be run twice`(tempDir: File) {
-        tempDir.runTestWithSuccessOutcome("source")
-        tempDir.runTestWithSuccessOutcome("anotherSource")
-    }
+    fun `task run twice with different dirs should be run twice`(tempDir: File) = tempDir.run {
+        build_gradle("source")
+        src("${"source"}/test.xml", "This\nis\na\nnew\nfile")
+        runGradleTask().assertOutcome(SUCCESS)
+        assertOutputContains("5")
 
-    private fun File.runTestWithSuccessOutcome(path: String) {
-        build_gradle(path)
-        src("$path/test.xml", "This\nis\na\nnew\nfile")
-
-        runGradleBuild().assertOutcome(SUCCESS)
+        build_gradle("otherSource")
+        src("${"otherSource"}/test.xml", "This\nis\na\nnew\nfile")
+        runGradleTask().assertOutcome(SUCCESS)
         assertOutputContains("5")
     }
 

@@ -56,11 +56,9 @@ open class Kt2tsTask : DefaultTask() {
     private fun cleanOutputFile() = output.writeText("")
 
     private fun appendToOutput(input: DirWithContent) = output.run {
-        appendText("Directory '${input.dir.name}':")
-        appendText("\n")
+        appendText("Directory '${input.dir.name}':\n")
         input.readLoc().forEach { key, value ->
-            appendText("'$key' has '$value' LOC in sum")
-            appendText("\n")
+            appendText("'$key' has '$value' LOC in sum\n")
         }
     }
 
