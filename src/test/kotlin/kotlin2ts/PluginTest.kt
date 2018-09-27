@@ -64,6 +64,11 @@ class PluginTest {
         }
     }
 
+    private fun File.readTaskOutput() = resolve("build/kt2ts/kt2ts.txt").readText()
+
+    private fun File.assertOutputContains(vararg chunks: String) = readTaskOutput().run {
+        chunks.forEach { assertThat(this).contains(it) }
+    }
 
     @Test
     fun `apply run task twice - should be up to date`(tempDir: File) {
@@ -83,8 +88,7 @@ class PluginTest {
         tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin")
 
         tempDir.runGradleBuild()
-        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
-        assertThat(kt2tsFileText.readText()).contains("5")
+        tempDir.assertOutputContains("5")
     }
 
     @Test
@@ -94,15 +98,14 @@ class PluginTest {
 
         val result = tempDir.runGradleBuild()
         assertThat(result.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
-        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
-        assertThat(kt2tsFileText.readText()).contains("5")
+        tempDir.assertOutputContains("5")
 
         // updating same file
         tempDir.src("source/test.xml", "This \n is \n droidcon \n italy \n turin\nta\nda-a-am")
 
         val result2 = tempDir.runGradleBuild()
         assertThat(result2.task(":kt2ts")!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
-        assertThat(kt2tsFileText.readText()).contains("7")
+        tempDir.assertOutputContains("7")
     }
 
     @Test
@@ -112,8 +115,7 @@ class PluginTest {
         tempDir.src("source/another/test.xml", "Another\nfile\nwith\nnew\nlines")
 
         tempDir.runGradleBuild()
-        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
-        assert(kt2tsFileText.readText().contains("10"))
+        tempDir.assertOutputContains("10")
     }
 
     @Test
@@ -124,9 +126,7 @@ class PluginTest {
         tempDir.src("notSource/test.xml", "Awesome\nnew\nlines")
 
         tempDir.runGradleBuild()
-        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
-        assert(kt2tsFileText.readText().contains("10"))
-        assert(kt2tsFileText.readText().contains("3"))
+        tempDir.assertOutputContains("10", "3")
     }
 
     @Test
@@ -154,11 +154,7 @@ class PluginTest {
         tempDir.src("notSource/test.kt", "Awesome\nnew\nlines")
 
         tempDir.runGradleBuild()
-        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
-        println(kt2tsFileText.readText())
-        assert(kt2tsFileText.readText().contains("5"))
-        assert(kt2tsFileText.readText().contains("6"))
-        assert(kt2tsFileText.readText().contains("3"))
+        tempDir.assertOutputContains("5", "6", "3")
     }
 
     @Test
@@ -178,8 +174,7 @@ class PluginTest {
         tempDir.src("$path/test.xml", "This\nis\na\nnew\nfile")
 
         val buildResult = tempDir.runGradleBuild()
-        val kt2tsFileText = File(tempDir, "build/kt2ts/kt2ts.txt")
-        assert(kt2tsFileText.readText().contains("5"))
+        tempDir.assertOutputContains("5")
         println(buildResult.output)
         stuff(buildResult)
     }
