@@ -103,24 +103,24 @@ class PluginTest {
 
     private fun File.readTaskOutput() = resolve("build/kt2ts/kt2ts.txt").readText()
 
+    private val cardsSourceKt = "/kotlin2ts/games/cards/Cards.kt"
+    private val cardsClasses = arrayOf("Player", "Rarity", "Inventory", "Card")
+
     @Test
     fun `task should read test sample classes and should write generated data to output`(tempDir: File): Unit = tempDir.run {
-        tempDir.copyInto("/kotlin2ts/games/cards/Cards.kt")
+        tempDir.copyInto(cardsSourceKt)
         build_gradle("kotlin2ts.games.cards")
 
         runGradleTask(Task.COMPILE)
         runGradleTask(Task.KT2TS)
 
         val output = readTaskOutput()
-        assertThat(output).contains("Player")
-        assertThat(output).contains("Rarity")
-        assertThat(output).contains("Inventory")
-        assertThat(output).contains("Card")
+        assertThat(output).contains(*cardsClasses)
     }
 
     @Test
     fun `apply run task twice - should be up to date`(tempDir: File) = tempDir.run {
-        tempDir.copyInto("/kotlin2ts/games/cards/Cards.kt")
+        tempDir.copyInto(cardsSourceKt)
         build_gradle("kotlin2ts.games.cards")
 
         runGradleTask(Task.COMPILE).assertOutcome(Task.COMPILE, SUCCESS)
@@ -128,46 +128,35 @@ class PluginTest {
         runGradleTask(Task.KT2TS).assertOutcome(Task.KT2TS, UP_TO_DATE)
     }
 
+    private val chessSourceKt = "/kotlin2ts/games/chess/Chess.kt"
+    private val chessClasses = arrayOf("Piece", "Vertical", "Horizontal", "Position", "ChessProblem")
+
     @Test
-    fun `task should recursively read test sample classes and should write generated data to output`(tempDir: File): Unit = tempDir.run {
-        tempDir.copyInto("/kotlin2ts/games/cards/Cards.kt")
-        tempDir.copyInto("/kotlin2ts/games/chess/Chess.kt")
+    fun `task should recursively read sample classes`(tempDir: File): Unit = tempDir.run {
+        tempDir.copyInto(cardsSourceKt)
+        tempDir.copyInto(chessSourceKt)
         build_gradle("kotlin2ts.games")
 
         runGradleTask(Task.COMPILE)
         runGradleTask(Task.KT2TS)
 
         val output = readTaskOutput()
-        assertThat(output).contains("Player")
-        assertThat(output).contains("Rarity")
-        assertThat(output).contains("Inventory")
-        assertThat(output).contains("Card")
-
-        assertThat(output).contains("Piece")
-        assertThat(output).contains("Vertical")
-        assertThat(output).contains("Position")
-        assertThat(output).contains("ChessProblem")
+        assertThat(output).contains(*cardsClasses)
+        assertThat(output).contains(*chessClasses)
     }
 
     @Test
     fun `task should filter sample classes by package name`(tempDir: File): Unit = tempDir.run {
-        tempDir.copyInto("/kotlin2ts/games/cards/Cards.kt")
-        tempDir.copyInto("/kotlin2ts/games/chess/Chess.kt")
+        tempDir.copyInto(cardsSourceKt)
+        tempDir.copyInto(chessSourceKt)
         build_gradle("kotlin2ts.games.chess")
 
         runGradleTask(Task.COMPILE)
         runGradleTask(Task.KT2TS)
 
         val output = readTaskOutput()
-        assertThat(output).doesNotContain("Player")
-        assertThat(output).doesNotContain("Rarity")
-        assertThat(output).doesNotContain("Inventory")
-        assertThat(output).doesNotContain("Card")
-
-        assertThat(output).contains("Piece")
-        assertThat(output).contains("Vertical")
-        assertThat(output).contains("Position")
-        assertThat(output).contains("ChessProblem")
+        assertThat(output).contains(*chessClasses)
+        assertThat(output).doesNotContain(*cardsClasses)
     }
 
 }
