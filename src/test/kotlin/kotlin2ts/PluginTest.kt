@@ -104,7 +104,7 @@ class PluginTest {
     private fun File.readTaskOutput() = resolve("build/kt2ts/kt2ts.txt").readText()
 
     @Test
-    fun `task should read test sample file and should write generated data to output`(tempDir: File): Unit = tempDir.run {
+    fun `task should read test sample classes and should write generated data to output`(tempDir: File): Unit = tempDir.run {
         tempDir.copyInto("/kotlin2ts/games/cards/Cards.kt")
         build_gradle("kotlin2ts.games.cards")
 
@@ -126,6 +126,48 @@ class PluginTest {
         runGradleTask(Task.COMPILE).assertOutcome(Task.COMPILE, SUCCESS)
         runGradleTask(Task.KT2TS).assertOutcome(Task.KT2TS, SUCCESS)
         runGradleTask(Task.KT2TS).assertOutcome(Task.KT2TS, UP_TO_DATE)
+    }
+
+    @Test
+    fun `task should recursively read test sample classes and should write generated data to output`(tempDir: File): Unit = tempDir.run {
+        tempDir.copyInto("/kotlin2ts/games/cards/Cards.kt")
+        tempDir.copyInto("/kotlin2ts/games/chess/Chess.kt")
+        build_gradle("kotlin2ts.games")
+
+        runGradleTask(Task.COMPILE)
+        runGradleTask(Task.KT2TS)
+
+        val output = readTaskOutput()
+        assertThat(output).contains("Player")
+        assertThat(output).contains("Rarity")
+        assertThat(output).contains("Inventory")
+        assertThat(output).contains("Card")
+
+        assertThat(output).contains("Piece")
+        assertThat(output).contains("Vertical")
+        assertThat(output).contains("Position")
+        assertThat(output).contains("ChessProblem")
+    }
+
+    @Test
+    fun `task should filter sample classes by package name`(tempDir: File): Unit = tempDir.run {
+        tempDir.copyInto("/kotlin2ts/games/cards/Cards.kt")
+        tempDir.copyInto("/kotlin2ts/games/chess/Chess.kt")
+        build_gradle("kotlin2ts.games.chess")
+
+        runGradleTask(Task.COMPILE)
+        runGradleTask(Task.KT2TS)
+
+        val output = readTaskOutput()
+        assertThat(output).doesNotContain("Player")
+        assertThat(output).doesNotContain("Rarity")
+        assertThat(output).doesNotContain("Inventory")
+        assertThat(output).doesNotContain("Card")
+
+        assertThat(output).contains("Piece")
+        assertThat(output).contains("Vertical")
+        assertThat(output).contains("Position")
+        assertThat(output).contains("ChessProblem")
     }
 
 }
