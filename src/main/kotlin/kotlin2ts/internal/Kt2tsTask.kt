@@ -73,9 +73,9 @@ open class Kt2tsTask : DefaultTask() {
  */
 data class PacksWithClasses(@Input val pack: String) {
     /**
-     * all load in package
+     * all classes in package
      */
-    val content: Set<ClassInfo> = ClassPath.from(ClassLoader.getSystemClassLoader()).getTopLevelClassesRecursive(pack)
+    private val content: Set<ClassInfo> = ClassPath.from(javaClass.classLoader).getTopLevelClassesRecursive(pack)
 
     @CompileClasspath
     val compileClassPath = content.map { it.resourceName }

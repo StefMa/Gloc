@@ -12,7 +12,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.github.ntrrgc:ts-generator:1.1.0")
-    implementation("com.google.guava:guava:23.0") { isTransitive = false }
+    implementation("com.google.guava:guava:26.0-jre") { isTransitive = false }
 
     testImplementation("org.assertj:assertj-core:3.9.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.1.0")
@@ -20,18 +20,6 @@ dependencies {
 }
 
 (tasks.findByName("test") as Test).useJUnitPlatform()
-
-tasks.register("manualClasspathCompilation") {
-    val outputDir = file("$buildDir/$name")
-
-    inputs.files(sourceSets["main"].runtimeClasspath)
-    outputs.dir(outputDir)
-
-    doLast {
-        outputDir.mkdirs()
-        file("$outputDir/plugin-classpath.txt").writeText(sourceSets["main"].runtimeClasspath.joinToString("\n"))
-    }
-}
 
 group = "kotlin2ts"
 version = "0.0.1"
