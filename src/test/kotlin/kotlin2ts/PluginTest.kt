@@ -103,18 +103,19 @@ class PluginTest {
 
     private fun File.readTaskOutput() = resolve("build/kt2ts/kt2ts.txt").readText()
 
-    private fun File.assertOutputContains(vararg chunks: String) = readTaskOutput().run {
-        chunks.forEach { assertThat(this).contains(it) }
-    }
-
     @Test
-    fun `task should read test sample file and should write generated data to output`(tempDir: File) = tempDir.run {
+    fun `task should read test sample file and should write generated data to output`(tempDir: File): Unit = tempDir.run {
         tempDir.copyInto("/kotlin2ts/games/cards/Cards.kt")
         build_gradle("kotlin2ts.games.cards")
 
         runGradleTask(Task.COMPILE)
         runGradleTask(Task.KT2TS)
-        assertOutputContains("Player", "Rarity", "Inventory", "Card")
+
+        val output = readTaskOutput()
+        assertThat(output).contains("Player")
+        assertThat(output).contains("Rarity")
+        assertThat(output).contains("Inventory")
+        assertThat(output).contains("Card")
     }
 
     @Test
