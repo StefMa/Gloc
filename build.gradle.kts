@@ -19,15 +19,12 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.1.0")
 }
 
-(tasks.findByName("test") as Test).useJUnitPlatform()
+tasks.named<Test>("test").configure { useJUnitPlatform() }
 
 group = "kotlin2ts"
 version = "0.0.1"
-gradlePlugin {
-    plugins {
-        create("kt2ts") {
-            id = "kotlin2ts"
-            implementationClass = "kotlin2ts.Kt2tsPlugin"
-        }
-    }
+gradlePlugin.plugins.create("kt2ts") {
+    id = "kotlin2ts"
+    implementationClass = "kotlin2ts.Kt2tsPlugin"
 }
+
