@@ -21,6 +21,18 @@ dependencies {
 
 (tasks.findByName("test") as Test).useJUnitPlatform()
 
+tasks.register("manualClasspathCompilation") {
+    val outputDir = file("$buildDir/$name")
+
+    inputs.files(sourceSets["main"].runtimeClasspath)
+    outputs.dir(outputDir)
+
+    doLast {
+        outputDir.mkdirs()
+        file("$outputDir/plugin-classpath.txt").writeText(sourceSets["main"].runtimeClasspath.joinToString("\n"))
+    }
+}
+
 group = "kotlin2ts"
 version = "0.0.1"
 gradlePlugin {
