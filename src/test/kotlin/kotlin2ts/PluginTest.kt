@@ -46,6 +46,10 @@ class PluginTest {
                 .build()
     }
 
+    private fun File.place(vararg names: String) {
+        names.forEach { copyInto(it) }
+    }
+
     private fun File.copyInto(name: String) {
         resolve("src/main/kotlin")
                 .apply {
@@ -108,7 +112,7 @@ class PluginTest {
 
     @Test
     fun `task should read test sample classes and should write generated data to output`(tempDir: File): Unit = tempDir.run {
-        tempDir.copyInto(cardsSourceKt)
+        place(cardsSourceKt)
         build_gradle("kotlin2ts.games.cards")
 
         runGradleTask(Task.COMPILE)
@@ -120,7 +124,7 @@ class PluginTest {
 
     @Test
     fun `apply run task twice - should be up to date`(tempDir: File) = tempDir.run {
-        tempDir.copyInto(cardsSourceKt)
+        place(cardsSourceKt)
         build_gradle("kotlin2ts.games.cards")
 
         runGradleTask(Task.COMPILE).assertOutcome(Task.COMPILE, SUCCESS)
@@ -133,8 +137,7 @@ class PluginTest {
 
     @Test
     fun `task should recursively read sample classes`(tempDir: File): Unit = tempDir.run {
-        tempDir.copyInto(cardsSourceKt)
-        tempDir.copyInto(chessSourceKt)
+        place(cardsSourceKt, chessSourceKt)
         build_gradle("kotlin2ts.games")
 
         runGradleTask(Task.COMPILE)
@@ -147,8 +150,7 @@ class PluginTest {
 
     @Test
     fun `task should filter sample classes by package name`(tempDir: File): Unit = tempDir.run {
-        tempDir.copyInto(cardsSourceKt)
-        tempDir.copyInto(chessSourceKt)
+        place(cardsSourceKt, chessSourceKt)
         build_gradle("kotlin2ts.games.chess")
 
         runGradleTask(Task.COMPILE)
@@ -161,12 +163,12 @@ class PluginTest {
 
     // @Test - fails
     fun `apply run task 2nd time after 2nd compile - should be up to date`(tempDir: File) = tempDir.run {
-        tempDir.copyInto(cardsSourceKt)
+        place(cardsSourceKt)
         build_gradle("kotlin2ts.games.cards")
         runGradleTask(Task.COMPILE).assertOutcome(Task.COMPILE, SUCCESS)
         runGradleTask(Task.KT2TS).assertOutcome(Task.KT2TS, SUCCESS)
 
-        tempDir.copyInto(cardsSourceKt)
+        place(cardsSourceKt)
         runGradleTask(Task.COMPILE).assertOutcome(Task.COMPILE, SUCCESS)
         runGradleTask(Task.KT2TS).assertOutcome(Task.KT2TS, UP_TO_DATE)
     }
