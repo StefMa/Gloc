@@ -23,7 +23,7 @@ class PluginTest {
         KT2TS("kt2ts", "build/classes/kotlin/main/")
     }
 
-    private fun File.runGradleTask(task: Task, useCache: Boolean = false): BuildResult {
+    private fun File.run(task: Task, useCache: Boolean = false): TaskOutcome {
         val args = mutableListOf(task.gradleName)
         if (useCache) {
             args += "--build-cache"
@@ -44,6 +44,7 @@ class PluginTest {
                     }
                 }
                 .build()
+                .task(":${task.gradleName}")!!.outcome
     }
 
     private fun File.place(vararg names: String) {
@@ -115,21 +116,21 @@ class PluginTest {
         place(cardsSourceKt)
         build_gradle("kotlin2ts.games.cards")
 
-        runGradleTask(Task.COMPILE)
-        runGradleTask(Task.KT2TS)
+        run(Task.COMPILE)
+        run(Task.KT2TS)
 
         val output = readTaskOutput()
         assertThat(output).contains(*cardsClasses)
     }
 
     @Test
-    fun `apply run task twice - should be up to date`(tempDir: File) = tempDir.run {
+    fun `apply run task twice - should be up to date`(tempDir: File): Unit = tempDir.run {
         place(cardsSourceKt)
         build_gradle("kotlin2ts.games.cards")
 
-        runGradleTask(Task.COMPILE).assertOutcome(Task.COMPILE, SUCCESS)
-        runGradleTask(Task.KT2TS).assertOutcome(Task.KT2TS, SUCCESS)
-        runGradleTask(Task.KT2TS).assertOutcome(Task.KT2TS, UP_TO_DATE)
+        assertThat(run(Task.COMPILE)).isEqualTo(SUCCESS)
+        assertThat(run(Task.KT2TS)).isEqualTo(SUCCESS)
+        assertThat(run(Task.KT2TS)).isEqualTo(UP_TO_DATE)
     }
 
     private val chessSourceKt = "/kotlin2ts/games/chess/Chess.kt"
@@ -140,8 +141,8 @@ class PluginTest {
         place(cardsSourceKt, chessSourceKt)
         build_gradle("kotlin2ts.games")
 
-        runGradleTask(Task.COMPILE)
-        runGradleTask(Task.KT2TS)
+        run(Task.COMPILE)
+        run(Task.KT2TS)
 
         val output = readTaskOutput()
         assertThat(output).contains(*cardsClasses)
@@ -153,24 +154,24 @@ class PluginTest {
         place(cardsSourceKt, chessSourceKt)
         build_gradle("kotlin2ts.games.chess")
 
-        runGradleTask(Task.COMPILE)
-        runGradleTask(Task.KT2TS)
+        run(Task.COMPILE)
+        run(Task.KT2TS)
 
         val output = readTaskOutput()
         assertThat(output).contains(*chessClasses)
         assertThat(output).doesNotContain(*cardsClasses)
     }
 
-    // @Test - fails
-    fun `apply run task 2nd time after 2nd compile - should be up to date`(tempDir: File) = tempDir.run {
+    // @Test // fails
+    fun `apply run task 2nd time after 2nd compile - should be up to date`(tempDir: File): Unit = tempDir.run {
         place(cardsSourceKt)
         build_gradle("kotlin2ts.games.cards")
-        runGradleTask(Task.COMPILE).assertOutcome(Task.COMPILE, SUCCESS)
-        runGradleTask(Task.KT2TS).assertOutcome(Task.KT2TS, SUCCESS)
+        assertThat(run(Task.COMPILE)).isEqualTo(SUCCESS)
+        assertThat(run(Task.KT2TS)).isEqualTo(SUCCESS)
 
         place(cardsSourceKt)
-        runGradleTask(Task.COMPILE).assertOutcome(Task.COMPILE, SUCCESS)
-        runGradleTask(Task.KT2TS).assertOutcome(Task.KT2TS, UP_TO_DATE)
+        assertThat(run(Task.COMPILE)).isEqualTo(SUCCESS)
+        assertThat(run(Task.KT2TS)).isEqualTo(UP_TO_DATE)
     }
 
 }
