@@ -159,4 +159,16 @@ class PluginTest {
         assertThat(output).doesNotContain(*cardsClasses)
     }
 
+    // @Test - fails
+    fun `apply run task 2nd time after 2nd compile - should be up to date`(tempDir: File) = tempDir.run {
+        tempDir.copyInto(cardsSourceKt)
+        build_gradle("kotlin2ts.games.cards")
+        runGradleTask(Task.COMPILE).assertOutcome(Task.COMPILE, SUCCESS)
+        runGradleTask(Task.KT2TS).assertOutcome(Task.KT2TS, SUCCESS)
+
+        tempDir.copyInto(cardsSourceKt)
+        runGradleTask(Task.COMPILE).assertOutcome(Task.COMPILE, SUCCESS)
+        runGradleTask(Task.KT2TS).assertOutcome(Task.KT2TS, UP_TO_DATE)
+    }
+
 }
