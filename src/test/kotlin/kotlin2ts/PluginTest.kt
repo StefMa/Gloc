@@ -5,8 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.gradle.testkit.runner.TaskOutcome.SUCCESS
-import org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
+import org.gradle.testkit.runner.TaskOutcome.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.io.File
@@ -98,7 +97,7 @@ class PluginTest {
         }
     }
 
-    private fun File.settings_gradle() = resolve("settings.gradle.kts").writeText(
+    private fun File.settings_gradle() = resolve("settings.gradle").writeText(
             """
                         buildCache {
                             local { directory = "$this/cache" }
@@ -172,6 +171,21 @@ class PluginTest {
         place(cardsSourceKt)
         assertThat(run(Task.COMPILE)).isEqualTo(SUCCESS)
         assertThat(run(Task.KT2TS)).isEqualTo(UP_TO_DATE)
+    }
+
+    @Test
+    fun `task should read from build cache`(tempDir: File): Unit = tempDir.run {
+        place(cardsSourceKt)
+        build_gradle("kotlin2ts.games.cards")
+
+        settings_gradle()
+        assertThat(run(Task.COMPILE)).isEqualTo(SUCCESS)
+        assertThat(run(Task.KT2TS, useCache = true)).isEqualTo(SUCCESS)
+
+        // Clean output dir and run again - should be read from build cache
+        resolve("build/kt2ts").deleteRecursively()
+        assertThat(run(Task.KT2TS, useCache = true)).isEqualTo(FROM_CACHE)
+        assertThat(readTaskOutput()).contains(*cardsClasses)
     }
 
 }
