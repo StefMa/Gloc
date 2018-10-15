@@ -1,7 +1,7 @@
 # Kt2ts
-A [Gradle Plugin](https://docs.gradle.org/current/userguide/custom_plugins.html) which translates Kotlin data classes into Typescript.
+A [Gradle Plugin](https://docs.gradle.org/current/userguide/custom_plugins.html) which translates Kotlin data classes into Typescript. It uses Alicia Boya García's [TypeScript definition generator](https://github.com/ntrrgc/ts-generator) for that.
 
-> Built with TDD approach demonstrated by Stefan May's in [Gloc](https://github.com/StefMa/Gloc) Gradle Plugin.
+> Plugin is built with TDD approach demonstrated by Stefan May's in his [Gloc](https://github.com/StefMa/Gloc) Gradle Plugin.
 
 ## How to use
 One is able to use/apply the plugin like this:
