@@ -78,7 +78,7 @@ class PluginTest {
                     """
                         plugins {
                             id("org.jetbrains.kotlin.jvm").version("$testKotlinVersion")
-                            id("kotlin2ts")
+                            id("kotlin2ts.kt2ts")
                         }
 
                         repositories {

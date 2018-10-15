@@ -7,7 +7,7 @@ A [Gradle Plugin](https://docs.gradle.org/current/userguide/custom_plugins.html)
 One is able to use/apply the plugin with ```build.gradle.kts```:
 ```kotlin
 plugins {
-  id("kotlin2ts") version "1.0.0"
+  id("kotlin2ts.kt2ts") version "1.0.0"
 }
 
 kt2ts {
@@ -18,7 +18,7 @@ kt2ts {
 or ```build.gradle```:
 ```groovy
 plugins {
-  id("kotlin2ts").version("1.0.0")
+  id("kotlin2ts.kt2ts").version("1.0.0")
 }
 
 kt2ts {

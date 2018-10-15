@@ -32,7 +32,7 @@ pluginBundle {
 }
 
 gradlePlugin.plugins.create("kt2ts") {
-    id = "kotlin2ts"
+    id = "kotlin2ts.kt2ts"
     displayName = "Kotlin into TypeScript converter"
     description = "A Gradle Plugin which translates Kotlin data classes into Typescript. It uses Alicia Boya García's TypeScript definition generator for that."
     implementationClass = "kotlin2ts.Kt2tsPlugin"
