@@ -22,7 +22,7 @@ dependencies {
 tasks.named<Test>("test").configure { useJUnitPlatform() }
 
 group = "kotlin2ts"
-version = "0.0.1"
+version = "1.0.0"
 gradlePlugin.plugins.create("kt2ts") {
     id = "kotlin2ts"
     implementationClass = "kotlin2ts.Kt2tsPlugin"
