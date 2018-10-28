@@ -1,4 +1,4 @@
-package guru.stefma.gloc.extension
+package kotlin2ts.extension
 
 import org.junit.jupiter.api.extension.*
 import java.io.File
